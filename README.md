@@ -1,5 +1,7 @@
 # Smart Expense Tracker (Flutter)
 
+[![CI](https://github.com/ZeyadMohamed00/flutter-smart-expense-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/ZeyadMohamed00/flutter-smart-expense-tracker/actions/workflows/ci.yml)
+
 Offline-first expense tracker: add income and expenses with no connection, see totals and a category chart, export CSV, and sync to a server when online.
 
 **Live web demo:** https://expense-web-three.vercel.app (sync API: https://expense-api-gamma.vercel.app/docs)
