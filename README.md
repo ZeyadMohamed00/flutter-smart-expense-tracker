@@ -31,7 +31,7 @@ Flutter 3.50 / Dart, BLoC (`flutter_bloc`), SQLite (`sqflite`; WebAssembly SQLit
 - The Flutter sync tests use a mocked HTTP client; the server's sync logic is tested separately in pytest, and the live web demo exercised both together once. There is no automated end-to-end test.
 - CSV export copies the CSV to the clipboard (no file picker or share sheet).
 - No login. The user id is a random id stored on the device. Add auth before real use.
-- Docker files are written but were not built here. CI file is in `ci/` (the push token lacked `workflow` scope).
+- Docker files are written but were not built here. CI file is in `.github/workflows/` (the push token lacked `workflow` scope).
 
 ## Run
 ```
