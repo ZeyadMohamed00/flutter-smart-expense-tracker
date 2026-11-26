@@ -26,6 +26,28 @@ void main() {
     await bloc.close();
   });
 
+  test('edit, undo delete and budgets persist through SQLite', () async {
+    final db = await memDb();
+    var n = 0, t = 1000;
+    final bloc = ExpenseBloc(db: db, idGen: () => 'id${n++}', clock: () => t++);
+    bloc.add(ExpenseAdded(5000, 'food', 'groceries'));
+    await bloc.stream.firstWhere((s) => s.items.length == 1);
+    bloc.add(const ExpenseEdited('id0', 7000, 'rent', 'fixed'));
+    final edited = await bloc.stream.firstWhere((s) => s.items.isNotEmpty && s.items.first.cents == 7000);
+    expect(edited.items.first.category, 'rent');
+    final gone = edited.items.first;
+    bloc.add(const ExpenseDeleted('id0'));
+    await bloc.stream.firstWhere((s) => s.items.isEmpty);
+    bloc.add(ExpenseRestored(gone));
+    await bloc.stream.firstWhere((s) => s.items.length == 1);
+    bloc.add(const BudgetSet('food', 20000));
+    final b = await bloc.stream.firstWhere((s) => s.budgets.isNotEmpty);
+    expect(b.budgets, {'food': 20000});
+    bloc.add(const BudgetSet('food', 0));
+    await bloc.stream.firstWhere((s) => s.budgets.isEmpty);
+    await bloc.close();
+  });
+
   test('sync without a service reports it instead of crashing', () async {
     final bloc = ExpenseBloc(db: await memDb());
     bloc.add(SyncRequested());

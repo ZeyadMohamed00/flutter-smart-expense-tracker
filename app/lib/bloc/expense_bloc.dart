@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -31,6 +32,32 @@ class ExpenseDeleted extends ExpenseEvent {
   List<Object?> get props => [id];
 }
 
+class ExpenseEdited extends ExpenseEvent {
+  final String id;
+  final int cents;
+  final String category;
+  final String note;
+  final bool isIncome;
+  const ExpenseEdited(this.id, this.cents, this.category, this.note, {this.isIncome = false});
+  @override
+  List<Object?> get props => [id, cents, category, note, isIncome];
+}
+
+class ExpenseRestored extends ExpenseEvent {
+  final Expense expense;
+  const ExpenseRestored(this.expense);
+  @override
+  List<Object?> get props => [expense];
+}
+
+class BudgetSet extends ExpenseEvent {
+  final String category;
+  final int cents; // 0 removes the budget
+  const BudgetSet(this.category, this.cents);
+  @override
+  List<Object?> get props => [category, cents];
+}
+
 class SyncRequested extends ExpenseEvent {}
 
 class DemoRequested extends ExpenseEvent {}
@@ -40,7 +67,8 @@ class ExpenseState extends Equatable {
   final int pendingCount;
   final bool syncing;
   final String? message;
-  const ExpenseState({this.items = const [], this.pendingCount = 0, this.syncing = false, this.message});
+  final Map<String, int> budgets; // monthly budget per category, in cents
+  const ExpenseState({this.items = const [], this.pendingCount = 0, this.syncing = false, this.message, this.budgets = const {}});
 
   int get income => items.where((e) => e.isIncome).fold(0, (a, e) => a + e.cents);
   int get spent => items.where((e) => !e.isIncome).fold(0, (a, e) => a + e.cents);
@@ -53,11 +81,11 @@ class ExpenseState extends Equatable {
     return m;
   }
 
-  ExpenseState copyWith({List<Expense>? items, int? pendingCount, bool? syncing, String? message}) => ExpenseState(
-      items: items ?? this.items, pendingCount: pendingCount ?? this.pendingCount, syncing: syncing ?? this.syncing, message: message);
+  ExpenseState copyWith({List<Expense>? items, int? pendingCount, bool? syncing, String? message, Map<String, int>? budgets}) => ExpenseState(
+      items: items ?? this.items, pendingCount: pendingCount ?? this.pendingCount, syncing: syncing ?? this.syncing, message: message, budgets: budgets ?? this.budgets);
 
   @override
-  List<Object?> get props => [items, pendingCount, syncing, message];
+  List<Object?> get props => [items, pendingCount, syncing, message, budgets];
 }
 
 int _seq = 0;
@@ -87,6 +115,23 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
       await db.upsert(Expense.fromRow(rows.first).copyWith(deleted: true, updatedAt: now()), synced: false);
       emit(await _snapshot(state));
     });
+    on<ExpenseEdited>((e, emit) async {
+      final rows = await db.db.query('expenses', where: 'id = ?', whereArgs: [e.id]);
+      if (rows.isEmpty) return;
+      final old = Expense.fromRow(rows.first);
+      await db.upsert(Expense(id: old.id, cents: e.cents, category: e.category, note: e.note, date: old.date, isIncome: e.isIncome, updatedAt: now()), synced: false);
+      emit(await _snapshot(state));
+    });
+    on<ExpenseRestored>((e, emit) async {
+      await db.upsert(e.expense.copyWith(deleted: false, updatedAt: now()), synced: false);
+      emit(await _snapshot(state));
+    });
+    on<BudgetSet>((e, emit) async {
+      final b = Map<String, int>.from(state.budgets);
+      if (e.cents <= 0) { b.remove(e.category); } else { b[e.category] = e.cents; }
+      await db.setMeta('budgets', jsonEncode(b));
+      emit(await _snapshot(state));
+    });
     on<DemoRequested>((e, emit) async {
       const demo = [
         (4500, 'food', 'Groceries (demo)', false), (1200, 'transport', 'Metro card (demo)', false), (8000, 'rent', 'Share of rent (demo)', false),
@@ -107,6 +152,9 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
     });
   }
 
-  Future<ExpenseState> _snapshot(ExpenseState s) async =>
-      s.copyWith(items: await db.list(), pendingCount: (await db.pending()).length);
+  Future<ExpenseState> _snapshot(ExpenseState s) async {
+    final raw = await db.meta('budgets');
+    final budgets = raw == null ? <String, int>{} : (jsonDecode(raw) as Map<String, dynamic>).map((k, v) => MapEntry(k, v as int));
+    return s.copyWith(items: await db.list(), pendingCount: (await db.pending()).length, budgets: budgets);
+  }
 }

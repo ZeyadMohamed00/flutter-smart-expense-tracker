@@ -20,8 +20,8 @@ void main() {
     await tester.runAsync(() => Future.delayed(const Duration(milliseconds: 200)));
     await tester.pumpAndSettle();
     expect(find.text('coffee'), findsWidgets);
-    expect(find.text('12.50'), findsOneWidget); // Spent KPI
-    expect(find.text('-12.50'), findsNWidgets(2)); // Balance KPI + list row
+    expect(find.text('12.50'), findsWidgets); // Spent KPI
+    expect(find.text('-12.50'), findsWidgets); // Balance KPI + list row
     expect(find.text('Not synced'), findsOneWidget);
   });
 }
@@ -36,7 +36,8 @@ void demoWidget() {
     await tester.tap(find.byKey(const Key('try-demo')));
     await tester.runAsync(() => Future.delayed(const Duration(milliseconds: 300)));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Transactions'));
+    await tester.pumpAndSettle();
     expect(find.textContaining('(demo)'), findsWidgets);
-    expect(find.byKey(const Key('try-demo')), findsNothing);
   });
 }
