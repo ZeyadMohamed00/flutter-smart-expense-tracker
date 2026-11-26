@@ -10,6 +10,18 @@ Press "Try demo" to load synthetic entries (every note says "demo"). Press the s
 
 Four tabs: Overview (7-day chart, category donut), Transactions (search, filters, edit, swipe to delete with undo), Insights (monthly stats), Budgets (per-category monthly limits stored on the device). Dark mode toggle. The web build is deployed from `flutter build web --release --dart-define=API_URL=...`.
 
+## System overview
+```mermaid
+flowchart LR
+  UI[Flutter UI] --> B[BLoC]
+  B --> R[Repository]
+  R --> L[(SQLite, source of truth for the UI)]
+  R -- POST /sync, push pending rows and pull changes --> S[FastAPI sync server]
+  S --> PG[(PostgreSQL)]
+```
+
+**Tech stack:** Flutter, Dart, BLoC, SQLite, fl_chart, FastAPI, PostgreSQL, Pytest, Docker.
+
 ## Stack
 Flutter 3.50 / Dart, BLoC (`flutter_bloc`), SQLite (`sqflite`; WebAssembly SQLite on the web build), `fl_chart`, FastAPI + PostgreSQL sync server.
 
