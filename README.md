@@ -5,7 +5,10 @@ Offline-first expense tracker: add income and expenses with no connection, see t
 **Live web demo:** https://expense-web-three.vercel.app (sync API: https://expense-api-gamma.vercel.app/docs)
 Press "Try demo" to load synthetic entries (every note says "demo"). Press the sync icon to send them to the server. Each browser gets its own random user id.
 
-![Web demo](docs/web-demo.png)
+![Web demo, overview](docs/web-demo.png)
+![Insights](docs/web-insights.png)
+
+Four tabs: Overview (7-day chart, category donut), Transactions (search, filters, edit, swipe to delete with undo), Insights (monthly stats), Budgets (per-category monthly limits stored on the device). Dark mode toggle. The web build is deployed from `flutter build web --release --dart-define=API_URL=...`.
 
 ## Stack
 Flutter 3.50 / Dart, BLoC (`flutter_bloc`), SQLite (`sqflite`; WebAssembly SQLite on the web build), `fl_chart`, FastAPI + PostgreSQL sync server.
