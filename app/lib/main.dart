@@ -24,6 +24,7 @@ Future<void> main() async {
     await db.setMeta('user_id', uid);
   }
   final sync = SyncService(db: db, client: http.Client(), baseUrl: apiUrl, userId: uid);
+  await sync.restoreSession();
   runApp(ExpenseApp(bloc: ExpenseBloc(db: db, sync: sync)..add(LoadRequested())));
 }
 

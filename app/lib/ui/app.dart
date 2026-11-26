@@ -63,6 +63,7 @@ class _HomePageState extends State<HomePage> {
                   await Clipboard.setData(ClipboardData(text: toCsv(s.items)));
                   if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('CSV copied to clipboard')));
                 }),
+            IconButton(tooltip: 'Account', icon: const Icon(Icons.account_circle_outlined), onPressed: () => showAccountDialog(context)),
             IconButton(tooltip: 'Sync', icon: s.syncing ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.sync), onPressed: s.syncing ? null : () => context.read<ExpenseBloc>().add(SyncRequested())),
           ]),
           floatingActionButton: FloatingActionButton(tooltip: 'Add entry', onPressed: () => showEntrySheet(context), child: const Icon(Icons.add)),
@@ -312,4 +313,61 @@ class _Budgets extends StatelessWidget {
       const SizedBox(height: 70),
     ]);
   }
+}
+
+
+/// Log in, create an account, or log out. Without an account the app still works as an anonymous device.
+Future<void> showAccountDialog(BuildContext context) async {
+  final sync = context.read<ExpenseBloc>().sync;
+  if (sync == null) return;
+  final mail = TextEditingController();
+  final pass = TextEditingController();
+  String? error;
+  bool busy = false;
+  await showDialog<void>(
+    context: context,
+    builder: (ctx) => StatefulBuilder(builder: (ctx, setState) {
+      final signedIn = sync.token != null && sync.token!.isNotEmpty;
+      Future<void> go(bool register) async {
+        setState(() {
+          busy = true;
+          error = null;
+        });
+        final err = await sync.authenticate(mail.text, pass.text, register: register);
+        if (err == null && ctx.mounted) {
+          Navigator.pop(ctx);
+          if (context.mounted) context.read<ExpenseBloc>().add(SyncRequested());
+        } else {
+          setState(() {
+            busy = false;
+            error = err;
+          });
+        }
+      }
+
+      return AlertDialog(
+        title: Text(signedIn ? 'Account' : 'Log in or create an account'),
+        content: signedIn
+            ? Text('Signed in as ${sync.email}. Your entries sync to this account.')
+            : Column(mainAxisSize: MainAxisSize.min, children: [
+                TextField(key: const Key('auth-email'), controller: mail, keyboardType: TextInputType.emailAddress, decoration: const InputDecoration(labelText: 'Email')),
+                TextField(key: const Key('auth-password'), controller: pass, obscureText: true, decoration: const InputDecoration(labelText: 'Password (8+ characters)')),
+                if (error != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(error!, key: const Key('auth-error'), style: const TextStyle(color: Colors.red))),
+              ]),
+        actions: signedIn
+            ? [
+                TextButton(key: const Key('logout'), onPressed: () async {
+                  await sync.logout();
+                  if (ctx.mounted) Navigator.pop(ctx);
+                }, child: const Text('Log out')),
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close')),
+              ]
+            : [
+                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Stay offline')),
+                TextButton(key: const Key('signup'), onPressed: busy ? null : () => go(true), child: const Text('Create account')),
+                FilledButton(key: const Key('login'), onPressed: busy ? null : () => go(false), child: const Text('Log in')),
+              ],
+      );
+    }),
+  );
 }

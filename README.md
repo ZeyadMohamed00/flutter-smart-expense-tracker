@@ -32,7 +32,7 @@ Flutter 3.50 / Dart, BLoC (`flutter_bloc`), SQLite (`sqflite`; WebAssembly SQLit
 - **Not verified: the Android build.** There is no Android SDK in the build environment, so I never built or ran an APK. The Android code path uses `sqflite` and is the same Dart code, but it has not been run on a device.
 - The Flutter sync tests use a mocked HTTP client; the server's sync logic is tested separately in pytest, and the live web demo exercised both together once. There is no automated end-to-end test.
 - CSV export copies the CSV to the clipboard (no file picker or share sheet).
-- No login. The user id is a random id stored on the device. Add auth before real use.
+- Accounts: optional. Log in or create an account from the account icon (JWT, stored in the server's Postgres) and your entries sync to that account on any device; without one the app works as an anonymous device and keeps everything local. Covered by `app/test/auth_test.dart` (mock server) and the server tests; not tried against a real Android device.
 - Docker files are written but were not built here. CI file is in `.github/workflows/` (the push token lacked `workflow` scope).
 
 ## Run
