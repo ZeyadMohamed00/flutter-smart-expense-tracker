@@ -43,3 +43,22 @@ def test_users_are_isolated_and_validation():
     assert sync("user-e")["changes"] == []
     assert c.post("/sync", json={}).status_code == 400
     assert c.post("/sync", headers={"X-User-Id": "user-f"}, json={"changes": [ch("n", -5)]}).status_code == 422
+
+
+def test_accounts_register_login_and_private_sync():
+    import uuid
+    email = f"{uuid.uuid4().hex[:10]}@example.com"
+    r = c.post("/auth/register", json={"email": email, "password": "correct-horse-1", "name": "Ann"})
+    assert r.status_code == 201
+    h = {"Authorization": "Bearer " + r.json()["access_token"]}
+    assert c.get("/auth/me", headers=h).json()["email"] == email
+    assert c.post("/auth/register", json={"email": email, "password": "correct-horse-1"}).status_code == 409
+    assert c.post("/auth/login", json={"email": email, "password": "bad-password-1"}).status_code == 401
+    ok = c.post("/auth/login", json={"email": email, "password": "correct-horse-1"}).json()
+    h2 = {"Authorization": "Bearer " + ok["access_token"]}
+    c.post("/sync", headers=h, json={"since": 0, "changes": [ch("acct1", 4200, 1)]})
+    # a second device logged in to the same account sees it; an anonymous device id does not
+    assert [x["id"] for x in c.post("/sync", headers=h2, json={"since": 0, "changes": []}).json()["changes"]] == ["acct1"]
+    assert c.post("/sync", headers={"X-User-Id": "someone-else"}, json={"since": 0, "changes": []}).json()["changes"] == []
+    assert c.post("/sync", headers={"X-User-Id": "user:1"}, json={"since": 0, "changes": []}).status_code == 400
+    assert c.post("/sync", headers={"Authorization": "Bearer junk"}, json={"since": 0, "changes": []}).status_code == 401

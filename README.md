@@ -56,3 +56,6 @@ cd app && flutter build web --dart-define=API_URL=https://your-api
 3. Why deletes are soft.
 4. How BLoC events turn into states (`ExpenseBloc`), and why `ExpenseState` derives totals.
 5. What is not proven: Android runtime, real auth, and end-to-end tests.
+
+## Accounts (server side)
+The sync server now has real accounts: `POST /auth/register`, `POST /auth/login`, `GET /auth/me` (PBKDF2-SHA256 + JWT, users stored in PostgreSQL). `/sync` accepts `Authorization: Bearer <token>` and keeps data under `user:<id>`, so one account syncs across devices; without a token it still uses the anonymous device id. Covered by pytest on real Postgres. **Not done yet:** the Flutter login/register screen (the app still syncs with its anonymous device id until it is added).
