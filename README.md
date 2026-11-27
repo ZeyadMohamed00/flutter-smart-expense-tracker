@@ -28,7 +28,7 @@ flowchart LR
 Flutter 3.50 / Dart, BLoC (`flutter_bloc`), SQLite (`sqflite`; WebAssembly SQLite on the web build), `fl_chart`, FastAPI + PostgreSQL sync server.
 
 ## Status, honestly
-- Verified: `flutter analyze` (no errors), 11 Flutter tests (unit, BLoC, widget) against **real SQLite** (FFI), 4 server tests on real Postgres, and a real-browser click-through of the live web build (Try demo, totals, chart, sync of 7 entries to the live server).
+- Verified: `flutter analyze` (no errors), 14 Flutter tests (unit, BLoC, widget) against **real SQLite** (FFI), 4 server tests on real Postgres, and a real-browser click-through of the live web build (Try demo, totals, chart, sync of 7 entries to the live server).
 - **Not verified: the Android build.** There is no Android SDK in the build environment, so I never built or ran an APK. The Android code path uses `sqflite` and is the same Dart code, but it has not been run on a device.
 - The Flutter sync tests use a mocked HTTP client; the server's sync logic is tested separately in pytest, and the live web app exercised both together once. There is no automated end-to-end test.
 - CSV export copies the CSV to the clipboard (no file picker or share sheet).
