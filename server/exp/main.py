@@ -1,6 +1,8 @@
 """Sync backend for the Smart Expense Tracker. One endpoint: POST /sync (push changes, pull newer ones)."""
 import os
+import time
 import hashlib, hmac, re, secrets
+from collections import deque
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -37,7 +39,22 @@ class LoginIn(BaseModel):
 ITERATIONS = 200_000
 
 
+_FAILS: dict = {}
+MAX_FAILS = int(os.getenv("LOGIN_MAX_FAILS", "5"))
+FAIL_WINDOW = int(os.getenv("LOGIN_FAIL_WINDOW_S", "300"))
+
+
+def _recent_fails(email):
+    q = _FAILS.setdefault(email, deque())
+    now = time.time()
+    while q and now - q[0] > FAIL_WINDOW:
+        q.popleft()
+    return q
+
+
 def _secret():
+    if not os.getenv("JWT_SECRET") and os.getenv("APP_ENV") == "production":
+        raise RuntimeError("JWT_SECRET must be set when APP_ENV=production")
     return os.getenv("JWT_SECRET") or hashlib.sha256(("jwt:" + os.getenv("DATABASE_URL", "local-dev-only")).encode()).hexdigest()
 
 
@@ -114,9 +131,13 @@ def create_app():
     @app.post("/auth/login")
     def login(b: LoginIn):
         email = b.email.strip().lower()
+        fails = _recent_fails(email)
+        if len(fails) >= MAX_FAILS:
+            raise HTTPException(429, "Too many failed logins, try again later", headers={"Retry-After": str(FAIL_WINDOW)})
         with engine.begin() as c:
             r = c.execute(text("SELECT id,name,password_hash FROM exp_users WHERE email=:e"), {"e": email}).first()
         if not r or not verify_password(b.password, r[2]):
+            fails.append(time.time())
             raise HTTPException(401, "Wrong email or password")
         return _out(r[0], email, r[1] or "")
 

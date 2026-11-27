@@ -33,7 +33,7 @@ Flutter 3.50 / Dart, BLoC (`flutter_bloc`), SQLite (`sqflite`; WebAssembly SQLit
 - The Flutter sync tests use a mocked HTTP client; the server's sync logic is tested separately in pytest, and the live web demo exercised both together once. There is no automated end-to-end test.
 - CSV export copies the CSV to the clipboard (no file picker or share sheet).
 - Accounts: optional. Log in or create an account from the account icon (JWT, stored in the server's Postgres) and your entries sync to that account on any device; without one the app works as an anonymous device and keeps everything local. Covered by `app/test/auth_test.dart` (mock server) and the server tests; not tried against a real Android device.
-- Docker files are written but were not built here. CI file is in `.github/workflows/` (the push token lacked `workflow` scope).
+- Docker files are written but were not built here. GitHub Actions CI runs on every push (`.github/workflows/ci.yml`; see the badge for the current state).
 
 ## Run
 ```
@@ -60,4 +60,4 @@ cd app && flutter build web --dart-define=API_URL=https://your-api
 5. What is not proven: Android runtime, real auth, and end-to-end tests.
 
 ## Accounts (server side)
-The sync server now has real accounts: `POST /auth/register`, `POST /auth/login`, `GET /auth/me` (PBKDF2-SHA256 + JWT, users stored in PostgreSQL). `/sync` accepts `Authorization: Bearer <token>` and keeps data under `user:<id>`, so one account syncs across devices; without a token it still uses the anonymous device id. Covered by pytest on real Postgres. **Not done yet:** the Flutter login/register screen (the app still syncs with its anonymous device id until it is added).
+The sync server now has real accounts: `POST /auth/register`, `POST /auth/login`, `GET /auth/me` (PBKDF2-SHA256 + JWT, users stored in PostgreSQL). Login is throttled per email: 5 failures in 5 minutes returns `429` (in-process memory, so each server instance counts separately). `APP_ENV=production` refuses to start without `JWT_SECRET`; otherwise a demo-only key derived from `DATABASE_URL` is used. `/sync` accepts `Authorization: Bearer <token>` and keeps data under `user:<id>`, so one account syncs across devices; without a token it still uses the anonymous device id. Covered by pytest on real Postgres. **Not done yet:** the Flutter login/register screen (the app still syncs with its anonymous device id until it is added).

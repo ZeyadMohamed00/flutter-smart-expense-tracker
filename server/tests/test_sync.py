@@ -62,3 +62,11 @@ def test_accounts_register_login_and_private_sync():
     assert c.post("/sync", headers={"X-User-Id": "someone-else"}, json={"since": 0, "changes": []}).json()["changes"] == []
     assert c.post("/sync", headers={"X-User-Id": "user:1"}, json={"since": 0, "changes": []}).status_code == 400
     assert c.post("/sync", headers={"Authorization": "Bearer junk"}, json={"since": 0, "changes": []}).status_code == 401
+
+
+def test_login_is_throttled_after_repeated_failures():
+    email = "throttle-test@example.com"
+    for _ in range(5):
+        assert c.post("/auth/login", json={"email": email, "password": "wrong-password-1"}).status_code == 401
+    r = c.post("/auth/login", json={"email": email, "password": "wrong-password-1"})
+    assert r.status_code == 429 and "Retry-After" in r.headers
