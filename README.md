@@ -4,10 +4,10 @@
 
 Offline-first expense tracker: add income and expenses with no connection, see totals and a category chart, export CSV, and sync to a server when online.
 
-**Live web demo:** https://expense-web-three.vercel.app (sync API: https://expense-api-gamma.vercel.app/docs)
-Press "Try demo" to load synthetic entries (every note says "demo"). Press the sync icon to send them to the server. Each browser gets its own random user id.
+**Live web app:** https://expense-web-three.vercel.app (sync API: https://expense-api-gamma.vercel.app/docs)
+Press "Load sample data" to add synthetic entries (every note says "sample"). Press the sync icon to send them to the server. Each browser gets its own random user id.
 
-![Web demo, overview](docs/web-demo.png)
+![Overview](docs/web-demo.png)
 ![Insights](docs/web-insights.png)
 
 Four tabs: Overview (7-day chart, category donut), Transactions (search, filters, edit, swipe to delete with undo), Insights (monthly stats), Budgets (per-category monthly limits stored on the device). Dark mode toggle. The web build is deployed from `flutter build web --release --dart-define=API_URL=...`.
@@ -30,7 +30,7 @@ Flutter 3.50 / Dart, BLoC (`flutter_bloc`), SQLite (`sqflite`; WebAssembly SQLit
 ## Status, honestly
 - Verified: `flutter analyze` (no errors), 11 Flutter tests (unit, BLoC, widget) against **real SQLite** (FFI), 4 server tests on real Postgres, and a real-browser click-through of the live web build (Try demo, totals, chart, sync of 7 entries to the live server).
 - **Not verified: the Android build.** There is no Android SDK in the build environment, so I never built or ran an APK. The Android code path uses `sqflite` and is the same Dart code, but it has not been run on a device.
-- The Flutter sync tests use a mocked HTTP client; the server's sync logic is tested separately in pytest, and the live web demo exercised both together once. There is no automated end-to-end test.
+- The Flutter sync tests use a mocked HTTP client; the server's sync logic is tested separately in pytest, and the live web app exercised both together once. There is no automated end-to-end test.
 - CSV export copies the CSV to the clipboard (no file picker or share sheet).
 - Accounts: optional. Log in or create an account from the account icon (JWT, stored in the server's Postgres) and your entries sync to that account on any device; without one the app works as an anonymous device and keeps everything local. Covered by `app/test/auth_test.dart` (mock server) and the server tests; not tried against a real Android device.
 - Docker files are written but were not built here. GitHub Actions CI runs on every push (`.github/workflows/ci.yml`; see the badge for the current state).

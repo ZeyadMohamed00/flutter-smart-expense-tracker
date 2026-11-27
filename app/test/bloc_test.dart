@@ -58,12 +58,12 @@ void main() {
 }
 
 void demoTests() {
-  test('demo data is labeled and adds entries', () async {
+  test('sample data is labeled and adds entries', () async {
     final bloc = ExpenseBloc(db: await memDb());
     bloc.add(DemoRequested());
     final s = await bloc.stream.firstWhere((s) => s.items.isNotEmpty);
     expect(s.items.length, 7);
-    expect(s.items.every((e) => e.note.contains('(demo)')), true);
+    expect(s.items.every((e) => e.note.contains('(sample)')), true);
     await bloc.close();
   });
 }

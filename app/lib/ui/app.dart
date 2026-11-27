@@ -6,7 +6,7 @@ import '../bloc/expense_bloc.dart';
 import '../data/csv.dart';
 import '../data/expense.dart';
 
-const _palette = [Color(0xFF6366F1), Color(0xFF14B8A6), Color(0xFFF59E0B), Color(0xFFEC4899), Color(0xFF0EA5E9), Color(0xFF8B5CF6), Color(0xFFEF4444), Color(0xFF22C55E)];
+const _palette = [Color(0xFF0F766E), Color(0xFF14B8A6), Color(0xFFF59E0B), Color(0xFFEC4899), Color(0xFF0EA5E9), Color(0xFF8B5CF6), Color(0xFFEF4444), Color(0xFF22C55E)];
 Color catColor(String c) => _palette[c.toLowerCase().codeUnits.fold(0, (a, b) => a + b) % _palette.length];
 IconData catIcon(String c) {
   switch (c.toLowerCase()) {
@@ -28,7 +28,7 @@ class ExpenseApp extends StatefulWidget {
 
 class _ExpenseAppState extends State<ExpenseApp> {
   ThemeMode mode = ThemeMode.light;
-  ThemeData _theme(Brightness b) => ThemeData(colorSchemeSeed: const Color(0xFF6366F1), brightness: b, useMaterial3: true, cardTheme: CardThemeData(elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: b == Brightness.light ? const Color(0xFFE5E7EB) : const Color(0xFF334155)))));
+  ThemeData _theme(Brightness b) => ThemeData(colorSchemeSeed: const Color(0xFF0F766E), brightness: b, useMaterial3: true, cardTheme: CardThemeData(elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: b == Brightness.light ? const Color(0xFFD9E2DF) : const Color(0xFF334155)))));
   @override
   Widget build(BuildContext context) => BlocProvider.value(
       value: widget.bloc,
@@ -133,9 +133,9 @@ class _DemoCard extends StatelessWidget {
         const Icon(Icons.account_balance_wallet, size: 36),
         const SizedBox(height: 8),
         const Text('No entries yet', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
-        const Text('Load synthetic demo data (clearly marked "demo") to look around.', textAlign: TextAlign.center),
+        const Text('Load sample entries (marked "sample") to look around.', textAlign: TextAlign.center),
         const SizedBox(height: 10),
-        FilledButton(key: const Key('try-demo'), onPressed: () => context.read<ExpenseBloc>().add(DemoRequested()), child: const Text('Try demo')),
+        FilledButton(key: const Key('load-sample'), onPressed: () => context.read<ExpenseBloc>().add(DemoRequested()), child: const Text('Load sample data')),
       ])));
 }
 
@@ -185,7 +185,7 @@ class _Overview extends StatelessWidget {
               maxY: maxY * 1.2, gridData: const FlGridData(show: false), borderData: FlBorderData(show: false),
               titlesData: FlTitlesData(show: true, leftTitles: const AxisTitles(), rightTitles: const AxisTitles(), topTitles: const AxisTitles(),
                   bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, m) => SideTitleWidget(meta: m, child: Text(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][days[v.toInt()].weekday - 1], style: const TextStyle(fontSize: 11)))))),
-              barGroups: [for (final (i, v) in perDay.indexed) BarChartGroupData(x: i, barRods: [BarChartRodData(toY: v, width: 18, color: const Color(0xFF6366F1), borderRadius: BorderRadius.circular(5))])]))),
+              barGroups: [for (final (i, v) in perDay.indexed) BarChartGroupData(x: i, barRods: [BarChartRodData(toY: v, width: 18, color: const Color(0xFF0F766E), borderRadius: BorderRadius.circular(5))])]))),
         ]))),
         Card(child: Padding(padding: const EdgeInsets.all(14), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('Where it goes', style: TextStyle(fontWeight: FontWeight.w700)),

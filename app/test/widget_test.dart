@@ -27,17 +27,17 @@ void main() {
 }
 
 void demoWidget() {
-  testWidgets('Try demo button loads labeled demo entries', (tester) async {
+  testWidgets('Load sample button loads labeled sample entries', (tester) async {
     final db = await tester.runAsync(memDb);
     final bloc = ExpenseBloc(db: db!)..add(LoadRequested());
     await tester.pumpWidget(ExpenseApp(bloc: bloc));
     await tester.runAsync(() => Future.delayed(const Duration(milliseconds: 100)));
     await tester.pump();
-    await tester.tap(find.byKey(const Key('try-demo')));
+    await tester.tap(find.byKey(const Key('load-sample')));
     await tester.runAsync(() => Future.delayed(const Duration(milliseconds: 300)));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Transactions'));
     await tester.pumpAndSettle();
-    expect(find.textContaining('(demo)'), findsWidgets);
+    expect(find.textContaining('(sample)'), findsWidgets);
   });
 }

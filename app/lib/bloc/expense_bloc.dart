@@ -134,8 +134,8 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
     });
     on<DemoRequested>((e, emit) async {
       const demo = [
-        (4500, 'food', 'Groceries (demo)', false), (1200, 'transport', 'Metro card (demo)', false), (8000, 'rent', 'Share of rent (demo)', false),
-        (2500, 'fun', 'Cinema (demo)', false), (650, 'food', 'Coffee (demo)', false), (30000, 'salary', 'Freelance payment (demo)', true), (1800, 'transport', 'Taxi (demo)', false),
+        (4500, 'food', 'Groceries (sample)', false), (1200, 'transport', 'Metro card (sample)', false), (8000, 'rent', 'Share of rent (sample)', false),
+        (2500, 'fun', 'Cinema (sample)', false), (650, 'food', 'Coffee (sample)', false), (30000, 'salary', 'Freelance payment (sample)', true), (1800, 'transport', 'Taxi (sample)', false),
       ];
       final base = now();
       for (final (i, d) in demo.indexed) {
